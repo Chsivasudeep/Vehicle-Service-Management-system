@@ -1,0 +1,292 @@
+###----vehicle service management system---###
+import random 
+import string
+
+#----------Coustmer details--------#
+class Customer:
+    def __init__(self, customer_name,phone_no, vehicle_no, Address):
+        self.customer_name = customer_name
+        self.customer_id = "".join(random.choices(string.ascii_letters+string.digits, k=5))
+        self.phone_no = phone_no
+        self.vehicle_no = vehicle_no
+        self.Address = Address
+
+    def display(self):
+        print("###-----Coustmer Details-----###")
+        print("coustmer_name:", self.customer_name)
+        print("coustmer_id:", self.customer_id) 
+        print("phone_no:", self.phone_no)
+        print("vehicle_no:", self.vehicle_no)
+        print("Address:", self.Address)   
+
+#----------Vehicles Class-----------#        
+
+class Vehicle:
+    def __init__(self, vehicle_no, model, vehicle_type, service_type, customer_id):
+        self.vehicle_no = vehicle_no
+        self.model = model
+        self.vehicle_type = vehicle_type
+        self.service_type = service_type
+        self.customer_id = customer_id
+        self.status = "pending"
+
+    def display(self):
+        print("###-----Vehicle_Details-----###")
+        print("vehicle_no:", self.vehicle_no) 
+        print("model:",self.model) 
+        print("vehicle_type:",self.vehicle_type) 
+        print("service_type:", self.service_type)
+        print("customer_id:", self.customer_id)
+        print("status:", self.status)
+
+###------------Service Center------------###
+class Service_Center:
+    def __init__(self):
+        self.customers = []
+        self.vehicles = []
+
+    def register_customer(self):
+        name = input("Enter the customer name: ")
+        phone_no = input("Enter the phone number: ")
+        vehicle_no = input("Enter the vehicle number: ")
+        Address = input("Enter the customer address: ")
+
+        customer = Customer(name, phone_no, vehicle_no, Address)
+
+        while True:
+            found = False
+
+            for c in self.customers:
+                if c.customer_id == customer.customer_id:
+                    found = True
+                    break
+
+            if found:
+                customer.customer_id = "". join(random.choices(string.ascii_letters+string.digits, k=5))
+            else:
+                break        
+
+        self.customers.append(customer)
+
+        print("\nCustomer registered successfully!")
+        print("Customer ID:", customer.customer_id)
+
+    #---- add_vehicle ----#
+    def add_vehicle(self):
+        customer_id = input("Enter the customer ID: ")
+
+        # Verify customer ID
+        customer = None
+
+        for c in self.customers:
+            if c.customer_id == customer_id:
+                customer = c
+                break
+
+        if customer is None:
+            print("Customer not found! Please register first.")
+            return
+
+        # Get vehicle details
+        vehicle_no = input("Enter the vehicle number: ")
+        model = input("Enter the model: ")
+        vehicle_type = input("Enter the vehicle type (bike/car): ")
+        service_type = "Not Selected"
+
+        vehicle = Vehicle(
+            vehicle_no, model, vehicle_type,
+            service_type, customer.customer_id
+        )
+
+        self.vehicles.append(vehicle)
+        print("Vehicle added successfully!")
+
+    #----- view_customers -----#
+    def view_customer(self):
+        print("1.Search customer by ID:")
+        print("2.Display All customer_details")
+        
+
+        choice= input("Enter the choice :")
+
+        if choice  == "1":
+            customer_id = input("Enter the customer_id")
+
+            for c in self.customers:
+                if c.customer_id == customer_id:
+                    c.display()
+                    return
+            print("Customer Not Found...!")
+        
+        elif choice == "2":
+
+                if not self.customers:
+                    print("No Customer Registered..!")
+                    return
+                else:
+                    for c in self.customers:
+                        c.display()
+        else:
+            print("Invalid Choice..!")                
+
+    #------ view_vehicles-----#
+    def view_vehicles(self):
+        print("Search Vehicle by customer_ID:")
+        print("Display All vehicles_details") 
+
+        choice = input("Enter the choice:")
+
+        if choice == "1":
+
+            customer_id = input("Enter the customer_id:")
+            found =  False
+
+            for v in self.vehicles:
+                if v.customer_id == customer_id:
+                    v.display()
+                    found = True
+
+            if not found:
+                print("No vehicle found for this customer_id")
+
+        elif choice == "2":
+
+            if not self.vehicles:
+                print("No vehicle Registered")
+            else:
+                for v in self.vehicles:
+                    v.display()
+        else:
+            print("Invalid Choice..!")            
+    #----------- view_services--------------#
+    services = {
+        "Bike": {
+            "General Service": 800,
+            "Oil Change": 500,
+            "Water Wash": 200
+        },
+        "Car": {
+            "General Service": 1500,
+            "Oil Change": 1000,
+            "Water Wash": 500
+        },
+        "Truck": {
+            "General Service": 3000,
+            "Oil Change": 2000,
+            "Water Wash": 1000
+        }
+    }
+
+
+    def view_services(self):
+
+        vehicle_no = input("Enter the vehicle_no:")
+
+        for v in self.vehicles:
+            if v.vehicle_no == vehicle_no:
+
+                vehicle_type = v.vehicle_type.strip().capitalize()
+
+                if vehicle_type not in  self.services:
+                    print("Invalid vehicle type")
+                    return
+            
+                service_list = list(self.services[vehicle_type].items())
+
+                print("Available Services")  
+
+                # Display available services
+                for i in range(len(service_list)):
+                    print(i + 1, service_list[i][0], "- ₹", service_list[i][1])
+
+                # Select a service
+                choice = input("Select service number: ")
+
+                if not choice.isdigit():
+                        print("Please enter a number!")
+                        return
+
+                choice = int(choice)
+
+                if 1 <= choice <= len(service_list):
+                    selected_service = service_list[choice - 1]
+                    v.service_type = selected_service[0]
+
+                    print("Service added:", selected_service[0])
+                    print("Price: ₹", selected_service[1])
+                else:
+                    print("Invalid service choice!")
+
+                return
+
+        print("Vehicle not found!")
+    #--------generate bill --------#            
+    
+    def generate_bill(self):
+        vehicle_no = input("Enter vehicle number: ")
+
+        for v in self.vehicles:
+            if v.vehicle_no == vehicle_no:
+
+                vehicle_type = v.vehicle_type.strip().capitalize()
+                service_name = v.service_type
+
+                if vehicle_type not in self.services:
+                    print("Invalid vehicle type!")
+                    return
+
+                if service_name not in self.services[vehicle_type]:
+                    print("Please select a service first!")
+                    return
+
+                price = self.services[vehicle_type][service_name]
+
+                print("\n----- Service Bill -----")
+                print("Vehicle Number:", v.vehicle_no)
+                print("Vehicle Type:", vehicle_type)
+                print("Service:", service_name)
+                print("Total Amount: ₹", price)
+                return
+
+#------------MAIN MENU---------------#
+
+    def main_menu(self):
+        while True:
+            print("\n--- Vehicle Service Management System ---")
+            print("1. Register Customer")
+            print("2. Add Vehicle")
+            print("3. View Customers")
+            print("4. View Vehicles")
+            print("5. View Services / Select Service")
+            print("6. Generate Bill")
+            print("7. Exit")
+
+            choice = input("Enter your choice: ")
+
+            if choice == "1":
+                self.register_customer()
+
+            elif choice == "2":
+                self.add_vehicle()
+
+            elif choice == "3":
+                self.view_customer()
+
+            elif choice == "4":
+                self.view_vehicles()
+
+            elif choice == "5":
+                self.view_services()
+
+            elif choice == "6":
+                self.generate_bill()
+
+            elif choice == "7":
+                print("Thank you for using our service!")
+                break
+
+            else:
+                print("Invalid choice! Please try again.")
+
+center = Service_Center()
+center.main_menu()           
