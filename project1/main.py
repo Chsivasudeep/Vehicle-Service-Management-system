@@ -1,4 +1,4 @@
-@###---- Vehicle Service Management System ----###
+###---- Vehicle Service Management System ----###
 
 import random
 import string
